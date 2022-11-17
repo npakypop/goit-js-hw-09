@@ -1,6 +1,4 @@
-// Описаний в документації
 import flatpickr from "flatpickr";
-// Додатковий імпорт стилів
 import "flatpickr/dist/flatpickr.min.css"
 
 const timerRef = document.querySelector('.timer');
@@ -10,15 +8,25 @@ const minutesRef = document.querySelector('[data-minutes]');
 const secondsRef = document.querySelector('[data-seconds]');
 const inputRef = document.querySelector('#datetime-picker');
 const buttonRef = document.querySelector('[data-start]');
+const valueRef = document.querySelectorAll('.value');
 
-daysRef.textContent = convertMs()
 inputRef.addEventListener('focus', onInputFieldFocus);
-inputRef.addEventListener('blur', onInputFieldBlur);
+buttonRef.addEventListener('click', onBtn);
 buttonRef.setAttribute('disabled', true);
-// console.log(hourseRef.textContent);
-// timerRef.style.display = 'flex';
-// timerRef.children.firstElementChild.textContent()
 
+timerRef.style.cssText = 'display: flex; gap:20px; margin-top: 20px;';
+for (const el of valueRef) {
+  el.style.fontSize = '40px';
+}
+for (const el of timerRef.children) { 
+  el.style.display = 'flex';
+  el.style.flexDirection = 'column';
+  el.style.justifyContent = 'center';
+  el.style.alignItems = 'center';
+}
+
+let intervalId = null;
+let date = null;
 
 const options = {
   enableTime: true,
@@ -26,22 +34,34 @@ const options = {
   defaultDate: new Date(),
   minuteIncrement: 1,
   onClose(selectedDates) {
-    console.log(selectedDates[0]);
+    date = selectedDates[0];
+
     if (selectedDates[0] < new Date()) { 
       alert('Please choose a date in the future');
       return;
     }
     buttonRef.removeAttribute('disabled');
-    buttonRef.addEventListener('click', onBtn);
-    function onBtn() { 
-      setInterval(() => {
-        let leftTime = selectedDates[0] - new Date();
-        console.log(convertMs(leftTime));
-      }, 1000);
-    }
   },
 };
 
+function onBtn() { 
+  buttonRef.setAttribute('disabled', true);
+  intervalId = setInterval(timer, 1000);
+}
+
+function timer() {
+  if ((date - new Date()) <= 0) { 
+    clearInterval(intervalId);
+    buttonRef.removeAttribute('disabled');
+    return;
+  }
+  
+  const leftTime = convertMs(date - new Date());
+  daysRef.textContent = leftTime.days;
+  hourseRef.textContent = leftTime.hours;
+  minutesRef.textContent = leftTime.minutes;
+  secondsRef.textContent = leftTime.seconds;
+}
 
 function convertMs(ms) {
   // Number of milliseconds per unit of time
@@ -51,27 +71,22 @@ function convertMs(ms) {
   const day = hour * 24;
 
   // Remaining days
-  const days = Math.floor(ms / day);
+  const days = addLeadingZero(Math.floor(ms / day));
   // Remaining hours
-  const hours = Math.floor((ms % day) / hour);
+  const hours = addLeadingZero(Math.floor((ms % day) / hour));
   // Remaining minutes
-  const minutes = Math.floor(((ms % day) % hour) / minute);
+  const minutes = addLeadingZero(Math.floor(((ms % day) % hour) / minute));
   // Remaining seconds
-  const seconds = Math.floor((((ms % day) % hour) % minute) / second);
-
+  const seconds = addLeadingZero(Math.floor((((ms % day) % hour) % minute) / second));
+  
   return { days, hours, minutes, seconds };
 }
 
-
-function onInputFieldFocus(event) { 
-  flatpickr("#datetime-picker", options);
-  // const time = options.defaultDate.getTime();
-  // console.log("time", time);
-  // console.log(convertMs(options.defaultDate.getTime()));
-  // return convertMs(options.defaultDate.getTime());
+function addLeadingZero(value) { 
+  return String(value).padStart(2, '0');
 }
 
-function onInputFieldBlur(event) { 
-  event.target.value = '';
+function onInputFieldFocus() { 
+  flatpickr("#datetime-picker", options); 
 }
 
