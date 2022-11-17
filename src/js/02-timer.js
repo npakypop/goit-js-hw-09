@@ -1,3 +1,4 @@
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css"
 
@@ -37,15 +38,18 @@ const options = {
     date = selectedDates[0];
 
     if (selectedDates[0] < new Date()) { 
-      alert('Please choose a date in the future');
+      // alert('Please choose a date in the future');
+      Notify.failure('Please choose a date in the future');
       return;
     }
+
     buttonRef.removeAttribute('disabled');
   },
 };
 
 function onBtn() { 
   buttonRef.setAttribute('disabled', true);
+  inputRef.setAttribute('disabled', true);
   intervalId = setInterval(timer, 1000);
 }
 
@@ -53,9 +57,10 @@ function timer() {
   if ((date - new Date()) <= 0) { 
     clearInterval(intervalId);
     buttonRef.removeAttribute('disabled');
+    inputRef.removeAttribute('disabled');
     return;
   }
-  
+
   const leftTime = convertMs(date - new Date());
   daysRef.textContent = leftTime.days;
   hourseRef.textContent = leftTime.hours;
